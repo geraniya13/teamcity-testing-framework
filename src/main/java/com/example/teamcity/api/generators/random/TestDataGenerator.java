@@ -1,17 +1,21 @@
-package com.example.teamcity.api.generators;
+package com.example.teamcity.api.generators.random;
 
-import com.example.teamcity.api.annotations.Optional;
-import com.example.teamcity.api.annotations.Parameterizable;
-import com.example.teamcity.api.annotations.Random;
+import com.example.teamcity.api.annotations.*;
+import com.example.teamcity.api.generators.factory.UserFactory;
 import com.example.teamcity.api.models.BaseModel;
 import com.example.teamcity.api.models.TestData;
+import com.example.teamcity.api.models.User;
 
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import static com.example.teamcity.api.enums.Scope.GLOBAL;
 
 public final class TestDataGenerator {
     private TestDataGenerator() {
@@ -107,6 +111,45 @@ public final class TestDataGenerator {
     // Метод, чтобы сгенерировать одну сущность. Передает пустой параметр generatedModels
     public static <T extends BaseModel> T generate(Class<T> generatorClass, Object... parameters) {
         return generate(Collections.emptyList(), generatorClass, parameters);
+    }
+
+    /**
+     * Читает @WithUserRole/@WithUserRoles на методе/классе и
+     * «подмешивает» нужные роли в testData.getUser() через UserFactory.
+     * Вызывай из BaseApiTest в @BeforeMethod: TestDataGenerator.applyUserRoles(testData, method)
+     */
+    public static void applyUserRoles(TestData testData, Method method) {
+        var anns = collectWithUserRoles(method);
+        if (anns.isEmpty()) return;
+
+        User user = testData.getUser();
+        for (var a : anns) {
+            if (a.scope() == GLOBAL) {
+                user = UserFactory.withGlobalRole(user, a.role());
+            } else {
+                String projectId = testData.getNewProjectDescription().getId();
+                if (projectId == null || projectId.isBlank()) {
+                    throw new IllegalArgumentException("Project scope requires projectId");
+                }
+                user = UserFactory.withProjectRole(user, a.role(), testData.getNewProjectDescription().getId());
+            }
+        }
+        testData.setUser(user);
+    }
+
+    // ---------- helpers ----------
+    private static List<WithUserRole> collectWithUserRoles(Method method) {
+        var list = new ArrayList<WithUserRole>();
+        addAnnotations(list, method.getDeclaringClass());
+        addAnnotations(list, method);
+        return list;
+    }
+
+    private static void addAnnotations(List<WithUserRole> acc, AnnotatedElement element) {
+        var single  = element.getAnnotation(WithUserRole.class);
+        var multiple = element.getAnnotation(WithUserRoles.class);
+        if (single  != null) acc.add(single);
+        if (multiple != null) acc.addAll(Arrays.asList(multiple.value()));
     }
 }
 

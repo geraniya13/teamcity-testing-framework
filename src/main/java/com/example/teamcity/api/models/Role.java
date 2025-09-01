@@ -6,14 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Role extends BaseModel {
-    @Builder.Default
-    private String roleId = "SYSTEM_ADMIN";
-    @Builder.Default
-    private String scope = "g";
+    private String roleId;
+    private String scope;
 }

@@ -1,4 +1,4 @@
-package com.example.teamcity.api.generators;
+package com.example.teamcity.api.generators.random;
 
 import org.apache.commons.lang3.RandomStringUtils;
 

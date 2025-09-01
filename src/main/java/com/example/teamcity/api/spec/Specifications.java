@@ -1,7 +1,10 @@
 package com.example.teamcity.api.spec;
 
 import com.example.teamcity.api.config.Config;
+import com.example.teamcity.api.enums.Scope;
+import com.example.teamcity.api.models.Role;
 import com.example.teamcity.api.models.User;
+import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
@@ -38,6 +41,30 @@ public class Specifications {
     public static RequestSpecification mockSpec() {
         return reqBuilder()
                 .setBaseUri("http://localhost:8081")
+                .build();
+    }
+
+    /** Скопировать базовую спеку и удалить заголовок. */
+    public static RequestSpecification removeHeader(RequestSpecification base, String header) {
+        return new RequestSpecBuilder()
+                .addRequestSpecification(base)
+                .addHeader(header, (String) null)
+                .build();
+    }
+
+    /** Скопировать базовую спеку и переопределить заголовок. */
+    public static RequestSpecification setHeader(RequestSpecification base, String header, String value) {
+        return new RequestSpecBuilder()
+                .addRequestSpecification(base)
+                .addHeader(header, value)
+                .build();
+    }
+
+    /** Поставить конкретный Content-Type. */
+    public static RequestSpecification withContentType(RequestSpecification base, String mime) {
+        return new RequestSpecBuilder()
+                .addRequestSpecification(base)
+                .setContentType(mime)
                 .build();
     }
 }

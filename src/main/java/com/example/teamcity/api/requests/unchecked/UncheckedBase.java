@@ -14,6 +14,16 @@ public class UncheckedBase extends Request implements CrudInterface {
         super(spec, endpoint);
     }
 
+    /**
+     *
+     * create nuul body
+     */
+    public Response createNullable(BaseModel model) {
+        var given = RestAssured.given().spec(spec);
+        if (model != null) given = given.body(model);
+        return given.post(endpoint.getUrl());
+    }
+
     @Override
     public Response create(BaseModel model) {
         return RestAssured

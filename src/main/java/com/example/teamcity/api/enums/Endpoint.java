@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 public enum Endpoint {
     BUILD_TYPES("/app/rest/buildTypes", BuildType.class),
-    PROJECTS("/app/rest/projects", Project.class),
+    PROJECTS("/app/rest/projects", NewProjectDescription.class),
     USERS("/app/rest/users", User.class),
     BUILD_QUEUE("/app/rest/buildQueue", BuildQueue.class),
     BUILDS("/app/rest/builds", Builds.class);

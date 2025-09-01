@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class TestData {
+    private NewProjectDescription newProjectDescription;
     private Project project;
     private User user;
     private BuildType buildType;

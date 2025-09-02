@@ -6,6 +6,7 @@ import com.example.teamcity.api.models.Role;
 import com.example.teamcity.api.models.User;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -13,12 +14,15 @@ import io.restassured.specification.RequestSpecification;
 
 import java.util.List;
 
+import static io.restassured.filter.log.LogDetail.ALL;
+
 public class Specifications {
     private static RequestSpecBuilder reqBuilder() {
         RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
         reqBuilder.setContentType(ContentType.JSON);
         reqBuilder.setAccept(ContentType.JSON);
         reqBuilder.addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()));
+        reqBuilder.log(ALL);
         return reqBuilder;
     }
 

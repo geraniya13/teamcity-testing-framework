@@ -2,9 +2,17 @@ package com.example.teamcity.api.requests.modifications;
 
 import com.example.teamcity.api.requests.ModificationStrategy;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.Filter;
+import io.restassured.filter.FilterContext;
+import io.restassured.http.Headers;
+import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
+import io.restassured.specification.FilterableResponseSpecification;
 import io.restassured.specification.RequestSpecification;
 
+import java.util.stream.Collectors;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.Map;
 import static io.restassured.RestAssured.given;
 
 public class HeaderModification implements ModificationStrategy {
@@ -12,11 +20,8 @@ public class HeaderModification implements ModificationStrategy {
     FilterableRequestSpecification filter;
 
     @Override
-    public Object remove(RequestSpecification requestSpecification, String key) {
-        return (requestSpecification).filter((req, res, ctx) -> {
-                    req.removeHeader(key); // меняем что хотим
-                    return ctx.next(req, res);         // отправляем дальше
-                });
+    public RequestSpecification remove(RequestSpecification spec, String key) {
+        return spec.noContentType();
     }
 
     @Override
@@ -24,6 +29,6 @@ public class HeaderModification implements ModificationStrategy {
         return null;
     }
 
-    RequestSpecification req = new HeaderModification().remove(new RequestSpecification(), "key");
+//    RequestSpecification req = new HeaderModification().remove(new RequestSpecification(), "key");
 
 }

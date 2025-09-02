@@ -3,7 +3,11 @@ package com.example.teamcity.api;
 import com.example.teamcity.api.annotations.WithUserRole;
 import com.example.teamcity.api.models.NewProjectDescription;
 import com.example.teamcity.api.requests.checked.CheckedRequests;
+import com.example.teamcity.api.requests.modifications.HeaderModification;
+import com.example.teamcity.api.requests.unchecked.UncheckedRequests;
 import com.example.teamcity.api.spec.Specifications;
+import com.example.teamcity.dataprovider.ProjectDataProvider;
+import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
 
 import static com.example.teamcity.api.enums.Endpoint.*;
@@ -33,14 +37,22 @@ public class NewProjectTest extends BaseApiTest {
 
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
-    @Test(description = "System Admin should not be able to create project without {header} header", groups = {"Negative", "CRUD"}, dataProvider = "auth, content")
-    public void systemAdminCreatesProjectWithoutHeaderTest(String header, String error, String message) {
+    @Test(description = "System Admin should not be able to create project without {header} header", groups = {"Negative", "CRUD"}, dataProvider = "project_headers_negative", dataProviderClass = ProjectDataProvider.class)
+    public void systemAdminCreatesProjectWithoutHeaderTest(String header, int status, String error) {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
 
-        step("Create project without " + header + " header", () -> systemAdminCheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getNewProjectDescription()));
-        step("Check " + error + " error and error message: " + message);
+        systemAdminCheckRequests.modify(PROJECTS, new HeaderModification(), "remove", header);
+
+        step("Create project without " + header + " header", () -> systemAdminCheckRequests.
+                <NewProjectDescription>getRequest(PROJECTS)
+                .create(testData.getNewProjectDescription()))
+                .then()
+                .assertThat()
+                .statusCode(status)
+                .body(Matchers.containsString(error));
+//        step("Check status " + status + "and error " + error + " error and error message: " + message);
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)

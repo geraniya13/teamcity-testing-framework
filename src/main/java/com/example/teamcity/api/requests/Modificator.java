@@ -10,12 +10,12 @@ public class Modificator {
         this.modificationStrategy = modificationStrategy;
     }
 
-    public void removeModification(RequestSpecification requestSpecification, String key) {
-        modificationStrategy.remove(requestSpecification, key);
+    public RequestSpecification removeModification(RequestSpecification requestSpecification, String key) {
+        return modificationStrategy.remove(requestSpecification, key);
     }
 
-    public void updateModification(RequestSpecification requestSpecification, String value) {
-        modificationStrategy.update(requestSpecification, value);
+    public RequestSpecification updateModification(RequestSpecification requestSpecification, String value) {
+        return modificationStrategy.update(requestSpecification, value);
     }
 
 

@@ -3,6 +3,7 @@ package com.example.teamcity.api.models;
 import com.example.teamcity.api.annotations.Optional;
 import com.example.teamcity.api.annotations.Random;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,6 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -31,21 +33,23 @@ public class Project extends BaseModel {
     private String description;
     private String href;
     private String webUrl;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private Properties parameters;
 
-//    private Links links;
+    //    private Links links;
     @Optional
     private Project parentProject;            // ссылка на родителя (рекурсивно)
 
-//    private StateField readOnlyUI;
+    //    private StateField readOnlyUI;
     @Optional
     private BuildType defaultTemplate;
+    private String locator;
 
-//    private BuildTypes buildTypes;
+    //    private BuildTypes buildTypes;
 //    private BuildTypes templates;
 //
 //    private DeploymentDashboards deploymentDashboards;
-
-    private Properties parameters;            // см. ниже (count/href/List<PropertyDto>)
+                // см. ниже (count/href/List<PropertyDto>)
 //    private VcsRoots vcsRoots;
 //
 //    private ProjectFeatures projectFeatures;
@@ -53,5 +57,5 @@ public class Project extends BaseModel {
 //    private CloudProfiles cloudProfiles;
 //    private Projects ancestorProjects;
 
-    private String locator;
+
 }

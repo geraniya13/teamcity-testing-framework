@@ -14,8 +14,8 @@ public class Modificator {
         return modificationStrategy.remove(requestSpecification, key);
     }
 
-    public RequestSpecification updateModification(RequestSpecification requestSpecification, String value) {
-        return modificationStrategy.update(requestSpecification, value);
+    public RequestSpecification updateModification(RequestSpecification requestSpecification, String key, String[]... values) {
+        return modificationStrategy.update(requestSpecification, key, values);
     }
 
 

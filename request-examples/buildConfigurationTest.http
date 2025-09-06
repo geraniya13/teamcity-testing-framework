@@ -1,5 +1,5 @@
 ### Constants
-@host = 192.168.0.44
+@host = 192.168.0.149
 @port = 8111
 @user = admin
 @password = admin
@@ -10,6 +10,11 @@
 
 ### GET all projects
 GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects
+Content-Type: application/json
+Accept: application/json
+
+### GET project
+GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects/id:{{projectId}}
 Content-Type: application/json
 Accept: application/json
 

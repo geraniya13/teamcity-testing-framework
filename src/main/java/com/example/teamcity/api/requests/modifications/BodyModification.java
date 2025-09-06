@@ -10,7 +10,7 @@ public class BodyModification implements ModificationStrategy {
     }
 
     @Override
-    public Object update(RequestSpecification requestSpecification, String value) {
+    public Object update(RequestSpecification requestSpecification, String key, String[]... values) {
         return null;
     }
 }

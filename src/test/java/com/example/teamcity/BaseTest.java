@@ -24,6 +24,6 @@ public class BaseTest {
     @AfterMethod(alwaysRun = true)
     public void afterTest() {
         softy.assertAll();
-        TestDataStorage.getStorage().deleteCreatedEntities();
+//        TestDataStorage.getStorage().deleteCreatedEntities();
     }
 }

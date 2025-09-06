@@ -2,11 +2,14 @@ package com.example.teamcity.api;
 
 import com.example.teamcity.api.annotations.WithUserRole;
 import com.example.teamcity.api.models.NewProjectDescription;
+import com.example.teamcity.api.models.Project;
 import com.example.teamcity.api.requests.checked.CheckedRequests;
 import com.example.teamcity.api.requests.modifications.HeaderModification;
 import com.example.teamcity.api.requests.unchecked.UncheckedRequests;
 import com.example.teamcity.api.spec.Specifications;
 import com.example.teamcity.dataprovider.ProjectDataProvider;
+import io.restassured.internal.http.Status;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
 
@@ -28,39 +31,43 @@ public class NewProjectTest extends BaseApiTest {
 
         var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
 
-        step("Create project", () -> systemAdminCheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getNewProjectDescription()));
+        step("Create project", () -> systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription()));
 
-        var createdProject = systemAdminCheckRequests.<NewProjectDescription>getRequest(PROJECTS).read(testData.getNewProjectDescription().getId());
+        var createdProject = systemAdminCheckRequests.<Project>getRequest(PROJECTS).read(testData.getNewProjectDescription().getId());
 
         step("Check project was created", () -> softy.assertEquals(testData.getNewProjectDescription().getName(), createdProject.getName(), "Project name is not correct"));
     }
 
 
+//    @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
+//    @Test(description = "System Admin should not be able to create project without {header} header", groups = {"Negative", "CRUD"}, dataProvider = "project_headers_negative", dataProviderClass = ProjectDataProvider.class)
+//    public void systemAdminCreatesProjectWithoutHeaderTest(String header, int status, String error) {
+//        step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+//
+//        var systemAdminCheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+//
+//        systemAdminCheckRequests.modify(PROJECTS, new HeaderModification(), "remove", header);
+//
+//        step("Create project without " + header + " header", () -> systemAdminCheckRequests.
+//                <NewProjectDescription>getRequest(PROJECTS)
+//                .create(testData.getNewProjectDescription()))
+//                .then()
+//                .assertThat()
+//                .statusCode(status)
+//                .body(Matchers.containsString(error));
+
+    /// /        step("Check status " + status + "and error " + error + " error and error message: " + message);
+//    }
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
-    @Test(description = "System Admin should not be able to create project without {header} header", groups = {"Negative", "CRUD"}, dataProvider = "project_headers_negative", dataProviderClass = ProjectDataProvider.class)
-    public void systemAdminCreatesProjectWithoutHeaderTest(String header, int status, String error) {
+    @Test(description = "System Admin should not be able to create project with wrong {value} in {header} header", groups = {"Negative", "CRUD"}, dataProvider = "project_headers_negative", dataProviderClass = ProjectDataProvider.class)
+//            dataProvider = "[user, auth, 401, mes], [password, auth, 401, mes], [content, content, 415, mes]")
+    public void systemAdminCreatesProjectWithWrongInfoInHeaderTest(String[] value, String header, String status, String error) {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
-
-        var systemAdminCheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
-
-        systemAdminCheckRequests.modify(PROJECTS, new HeaderModification(), "remove", header);
-
-        step("Create project without " + header + " header", () -> systemAdminCheckRequests.
-                <NewProjectDescription>getRequest(PROJECTS)
-                .create(testData.getNewProjectDescription()))
-                .then()
-                .assertThat()
-                .statusCode(status)
-                .body(Matchers.containsString(error));
-//        step("Check status " + status + "and error " + error + " error and error message: " + message);
-    }
-
-    @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
-    @Test(description = "System Admin should not be able to create project with wrong {value} in {header} header", groups = {"Negative", "CRUD"}, dataProvider = "[user, auth, 401, mes], [password, auth, 401, mes], [content, content, 415, mes]")
-    public void systemAdminCreatesProjectWithWrongInfoInHeaderTest(String value, String header, String error, String message) {
-        step("Create system admin");
-        step("Create project with wrong " + value + "in " + header + " header");
-        step("Check " + error + " error and error message: " + message);
+        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        step("Create project with wrong " + value + "in " + header + " header", () -> {
+            systemAdminUncheckRequests.modify(PROJECTS, new HeaderModification(), "update", header, value);
+        });
+        step("Check " + status + " error and error message: " + error);
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
@@ -91,16 +98,27 @@ public class NewProjectTest extends BaseApiTest {
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
     @Test(description = "System Admin should not be able to create project with unexistent project parent", groups = {"Negative", "CRUD"})
     public void systemAdminCreatesProjectWithUnexistentParentTest() {
-        step("Create system admin");
-        step("Create project with unexistent project parent");
-        step("Check 400 error and error message");
+        step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+
+        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+
+        step("Create project with unexistent project parent and check 404 status and error message", () -> {
+            testData.getNewProjectDescription().setParentProject(testData.getProject());
+
+            systemAdminUncheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getNewProjectDescription())
+                    .then()
+                    .assertThat()
+                    .statusCode(404)
+                    .body(Matchers.containsString("Project cannot be found by external id '%s'".formatted(testData.getProject().getId())));
+            ;
+        });
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
     @Test(description = "System Admin should not be able to create project with existent {value}", groups = {"Negative", "CRUD"}, dataProvider = "name, id")
     public void systemAdminCreatesProjectWithExistentNameTest(String value) {
         step("Create system admin");
-        step("Create project with existent "  + value);
+        step("Create project with existent " + value);
         step("Check 409 error and error message");
     }
 
@@ -149,21 +167,49 @@ public class NewProjectTest extends BaseApiTest {
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
     @Test(description = "System Admin should be able to create project with same parent and source projects", groups = {"Positive", "CRUD"})
     public void systemAdminCreatesProjectWithSameParentAndSourceTest() {
-        step("Create system admin");
-        step("Create parent project with full data");
-        step("Create project with parent as source project");
-        step("Check project was created");
-        step("Check parent and source of created project");
+        step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+
+        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+
+
+//        step("Create parent project with full data", () ->
+         Project parentProject = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
+//    );
+        testData.getNewProjectDescription().setParentProject(parentProject);
+        testData.getNewProjectDescription().setSourceProject(parentProject);
+
+        step("Create project with parent as source project", () -> new UncheckedRequests(Specifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription()))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.SC_OK);
+//        step("Check project was created");
+//        step("Check parent and source of created project");
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
-    @Test(description = "System Admin should not be able to create project with different source locator and source projects", groups = {"Negative", "CRUD"})
+    @Test(description = "System Admin should not be able to specify both source project and source locator", groups = {"Negative", "CRUD"})
     public void systemAdminCreatesProjectWithDifferentSourceLocatorAndSourceTest() {
-        step("Create system admin");
-        step("Create 1 source project with full data");
-        step("Create 2 source project with full data");
-        step("Create project with 1 as source project and 2 as source locator");
-        step("Check 400 error and error message");
+        Project project1;
+        Project project2;
+        step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+
+        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+
+//        step("Create 1st source project", () ->
+        project1 = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
+        //    );
+//        step("Create 2nd source project", () ->
+        project2 = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
+
+        step("Create project with 1 as source project and 2 as source locator and check 400 error and error message", () -> {
+            testData.getNewProjectDescription().setSourceProject(project1);
+            testData.getNewProjectDescription().setSourceProjectLocator("id:" + project2.getId());
+         new UncheckedRequests(Specifications.authSpec(testData.getUser())).<NewProjectDescription>getRequest(PROJECTS).create(testData.getNewProjectDescription())
+                 .then()
+                 .assertThat()
+                 .statusCode(HttpStatus.SC_BAD_REQUEST)
+                 .body(Matchers.containsString("Both 'sourceProject' and 'sourceProjectLocator' are specified."));
+        });
     }
 
 

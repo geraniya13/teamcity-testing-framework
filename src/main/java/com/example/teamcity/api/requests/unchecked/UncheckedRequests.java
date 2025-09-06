@@ -22,7 +22,7 @@ public class UncheckedRequests {
     }
 
 
-    public void modify(Endpoint endpoint, ModificationStrategy modificationStrategy, String action, String key) {
+    public void modify(Endpoint endpoint, ModificationStrategy modificationStrategy, String action, String key, String[] value) {
         UncheckedBase newUncheckedBase = null;
         RequestSpecification spec = requests.get(endpoint).getSpec();
         modificator.setModificationStrategy(modificationStrategy);
@@ -32,7 +32,7 @@ public class UncheckedRequests {
                 requests.replace(endpoint, newUncheckedBase);
                 break;
             case "update":
-                newUncheckedBase = new UncheckedBase(modificator.updateModification(spec, key), endpoint);
+                newUncheckedBase = new UncheckedBase(modificator.updateModification(spec, key, value), endpoint);
                 break;
             default:
                 requests.replace(endpoint, newUncheckedBase);

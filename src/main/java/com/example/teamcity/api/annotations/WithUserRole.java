@@ -12,6 +12,5 @@ import static com.example.teamcity.api.enums.Scope.GLOBAL;
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface WithUserRole {
     TsRole role();
-    Scope scope() default GLOBAL; // G или P
-//    String projectId() default "";                 // обязателен при scope=P
+    Scope scope() default GLOBAL;
 }

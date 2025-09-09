@@ -18,33 +18,25 @@ public final class UserFactory {
     private UserFactory() {
     }
 
-    /**
-     * Вернуть копию user с добавленной ГЛОБАЛЬНОЙ ролью
-     */
     public static User withGlobalRole(User user, TsRole tsRole) {
         return upsertRole(user, tsRole, GLOBAL, null);
     }
 
-    /**
-     * Вернуть копию user с добавленной ПРОЕКТНОЙ ролью
-     */
     public static User withProjectRole(User user, TsRole tsRole, String projectId) {
         return upsertRole(user, tsRole, PROJECT, projectId);
     }
 
-    // ------------------ helpers ------------------
     private static User upsertRole(User user, TsRole tsRole, Scope scope, String projectId) {
         Role newRole = Role.builder()
-                .roleId(tsRole.getRole())                          // << из твоего enum'а
-                .scope(scope == Scope.GLOBAL ? "g" : "p:" + projectId) // << "g" или "p:<id>"
+                .roleId(tsRole.getRole())
+                .scope(scope == Scope.GLOBAL ? "g" : "p:" + projectId)
                 .build();
 
         List<Role> current = (user.getRoles() != null && user.getRoles().getRole() != null)
                 ? user.getRoles().getRole()
                 : List.of();
-        List<Role> editable = new ArrayList<>(current);            // делаем mutаble копию
+        List<Role> editable = new ArrayList<>(current);
 
-        // если в DTO лежит единственная "пустая" роль — заменяем её
         if (editable.size() == 1 && editable.get(0) != null && editable.get(0).getRoleId() == null) {
             editable.clear();
             editable.add(newRole);
@@ -60,21 +52,6 @@ public final class UserFactory {
                 .roles(Roles.builder().role(editable).build())
                 .build();
     }
-//    private static void withRole(User user, TsRole tsRole, Scope scope, String projectId) {
-//        var userRole = Role.builder()
-//                .roleId(tsRole.getRole())
-//                .scope(scope == GLOBAL ? scope.getScope() : scope.getScope() + ":" + projectId)
-//                .build();
-//
-//        List<String> s = new ArrayList<>();
-//
-//        if (user.getRoles().getRole().size() == 1 && user.getRoles().getRole().get(0).getRoleId() == null) {
-//            user.getRoles().getRole().set(0, userRole);
-//        } else {
-//            var merged = merge(user.getRoles(), userRole);
-//            user.setRoles(Roles.builder().role(merged).build());
-//        }
-//    }
 
     private static List<Role> merge(Roles existing, Role toAdd) {
         var result = new ArrayList<Role>();

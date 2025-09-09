@@ -10,7 +10,7 @@ public enum Endpoint {
     BUILD_TYPES("/app/rest/buildTypes", BuildType.class),
     PROJECTS("/app/rest/projects", Project.class),
     USERS("/app/rest/users", User.class),
-    BUILD_QUEUE("/app/rest/buildQueue", BuildQueue.class),
+    BUILD_QUEUE("/app/rest/buildQueue", Build.class),
     BUILDS("/app/rest/builds", Builds.class);
 
     private final String url;

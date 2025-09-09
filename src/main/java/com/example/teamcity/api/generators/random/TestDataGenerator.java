@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.example.teamcity.api.enums.Scope.GLOBAL;
+import static com.example.teamcity.api.enums.Scope.PROJECT;
 
 public final class TestDataGenerator {
     private TestDataGenerator() {
@@ -113,11 +114,6 @@ public final class TestDataGenerator {
         return generate(Collections.emptyList(), generatorClass, parameters);
     }
 
-    /**
-     * Читает @WithUserRole/@WithUserRoles на методе/классе и
-     * «подмешивает» нужные роли в testData.getUser() через UserFactory.
-     * Вызывай из BaseApiTest в @BeforeMethod: TestDataGenerator.applyUserRoles(testData, method)
-     */
     public static void applyUserRoles(TestData testData, Method method) {
         var anns = collectWithUserRoles(method);
         if (anns.isEmpty()) return;
@@ -126,8 +122,8 @@ public final class TestDataGenerator {
         for (var a : anns) {
             if (a.scope() == GLOBAL) {
                 user = UserFactory.withGlobalRole(user, a.role());
-            } else {
-                String projectId = testData.getNewProjectDescription().getId();
+            } else if (a.scope().equals(PROJECT)) {
+                String projectId = testData.getProject().getId();
                 if (projectId == null || projectId.isBlank()) {
                     throw new IllegalArgumentException("Project scope requires projectId");
                 }
@@ -137,7 +133,6 @@ public final class TestDataGenerator {
         testData.setUser(user);
     }
 
-    // ---------- helpers ----------
     private static List<WithUserRole> collectWithUserRoles(Method method) {
         var list = new ArrayList<WithUserRole>();
         addAnnotations(list, method.getDeclaringClass());

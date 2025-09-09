@@ -5,12 +5,16 @@ import com.example.teamcity.api.generators.TestDataStorage;
 import com.example.teamcity.api.models.BaseModel;
 import com.example.teamcity.api.requests.CrudInterface;
 import com.example.teamcity.api.requests.Request;
+import com.example.teamcity.api.requests.SearchInterface;
 import com.example.teamcity.api.requests.unchecked.UncheckedBase;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.specification.RequestSpecification;
 import org.apache.http.HttpStatus;
 
+import java.util.List;
+
 @SuppressWarnings("unchecked")
-public final class CheckedBase<T extends BaseModel> extends Request implements CrudInterface {
+public final class CheckedBase<T extends BaseModel> extends Request implements CrudInterface, SearchInterface {
     private final UncheckedBase uncheckedBase;
 
     public CheckedBase(RequestSpecification spec, Endpoint endpoint) {
@@ -19,9 +23,9 @@ public final class CheckedBase<T extends BaseModel> extends Request implements C
     }
 
     @Override
-    public T create(BaseModel model) {
+    public T create(Object model, String... args) {
         var createdModel = (T) uncheckedBase
-                .create(model)
+                .create(model, args)
                 .then().assertThat().statusCode(HttpStatus.SC_OK)
                 .extract().as(endpoint.getModelClass());
         // мы уверены, что сущность создана
@@ -30,26 +34,42 @@ public final class CheckedBase<T extends BaseModel> extends Request implements C
     }
 
     @Override
-    public T read(String id) {
+    public T read(String id, String... args) {
         return (T) uncheckedBase
-                .read(id)
+                .read(id, args)
                 .then().assertThat().statusCode(HttpStatus.SC_OK)
                 .extract().as(endpoint.getModelClass());
     }
 
     @Override
-    public T update(String id, BaseModel model) {
+    public T update(String id, BaseModel model, String... args) {
         return (T) uncheckedBase
-                .update(id, model)
+                .update(id, model, args)
                 .then().assertThat().statusCode(HttpStatus.SC_OK)
                 .extract().as(endpoint.getModelClass());
     }
 
     @Override
-    public Object delete(String id) {
+    public Object delete(String id,  String... args) {
         return uncheckedBase
-                .delete(id)
+                .delete(id, args)
                 .then().assertThat().statusCode(HttpStatus.SC_OK)
                 .extract().asString();
+    }
+
+    @Override
+    public Object searchAll(String[]...args) {
+        return uncheckedBase
+                .searchAll(args)
+                .then().assertThat().statusCode(HttpStatus.SC_OK)
+                .extract().as(new TypeRef<List<T>>() {});
+    }
+
+    @Override
+    public T searchSingle(String[]... args) {
+        return (T) uncheckedBase
+                .searchSingle(args)
+                .then().assertThat().statusCode(HttpStatus.SC_OK)
+                .extract().as(endpoint.getModelClass());
     }
 }

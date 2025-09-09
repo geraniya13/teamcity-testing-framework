@@ -10,7 +10,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.example.teamcity.api.enums.Endpoint.BUILD_QUEUE;
 
@@ -18,12 +17,10 @@ import static com.example.teamcity.api.enums.Endpoint.BUILD_QUEUE;
 public class StartBuildTest extends BaseApiTest {
     @BeforeMethod
     public void setupWireMockServer() {
-        var fakeBuild = Build.builder()
-                .state("finished")
-                .status("SUCCESS")
-                .build();
+        testData.getBuild().setState("finished");
+        testData.getBuild().setStatus("SUCCESS");
 
-        WireMock.setupServer(post(BUILD_QUEUE.getUrl()), HttpStatus.SC_OK, fakeBuild);
+        WireMock.setupServer(post(BUILD_QUEUE.getUrl()), HttpStatus.SC_OK, testData.getBuild());
     }
 
     @Test(description = "User should be able to start build (with WireMock)", groups = {"Regression"})
@@ -31,12 +28,10 @@ public class StartBuildTest extends BaseApiTest {
         var checkedBuildQueueRequest = new CheckedBase<Build>(Specifications
                 .mockSpec(), BUILD_QUEUE);
 
-        var build = checkedBuildQueueRequest.create(Build.builder()
-                .buildType(testData.getBuildType())
-                .build());
+        var build = checkedBuildQueueRequest.create(testData.getBuild());
 
-        softy.assertEquals(build.getState(),"finished");
-        softy.assertEquals(build.getStatus(),"SUCCESS");
+        softy.assertEquals(build.getState(), "finished");
+        softy.assertEquals(build.getStatus(), "SUCCESS");
     }
 
     @AfterMethod(alwaysRun = true)

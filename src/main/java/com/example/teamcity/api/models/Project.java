@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 
 @Builder
 @Data
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class Project extends BaseModel {
     @Random
     private String id;
@@ -22,40 +22,18 @@ public class Project extends BaseModel {
     private String uuid;
     @Random
     private String name;
-
     private String parentProjectId;
     private String parentProjectInternalId;
     private String parentProjectName;
-
     private boolean archived;
     private boolean virtual;
-
     private String description;
     private String href;
     private String webUrl;
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Properties parameters;
-
-    //    private Links links;
     @Optional
-    private Project parentProject;            // ссылка на родителя (рекурсивно)
-
-    //    private StateField readOnlyUI;
+    private Project parentProject;
     @Optional
     private BuildType defaultTemplate;
     private String locator;
-
-    //    private BuildTypes buildTypes;
-//    private BuildTypes templates;
-//
-//    private DeploymentDashboards deploymentDashboards;
-                // см. ниже (count/href/List<PropertyDto>)
-//    private VcsRoots vcsRoots;
-//
-//    private ProjectFeatures projectFeatures;
-//    private Projects projects;
-//    private CloudProfiles cloudProfiles;
-//    private Projects ancestorProjects;
-
-
 }

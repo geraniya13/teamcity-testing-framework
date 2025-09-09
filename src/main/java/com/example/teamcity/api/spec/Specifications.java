@@ -26,7 +26,7 @@ public class Specifications {
         return reqBuilder;
     }
 
-    public static RequestSpecification defaulSpec() {
+    public static RequestSpecification defaultSpec() {
         return reqBuilder()
                 .build();
     }

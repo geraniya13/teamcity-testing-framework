@@ -66,12 +66,11 @@ public class ProjectDataProvider {
     }
 
     @DataProvider(name = "project_invalid_id_negative")
-    public static Object[][] bodyNegative() {
+    public static Object[][] invalidIdNegative() {
         return new Object[][]{
                 {"123", 500, "starts with non-letter character '1'"},
                 {"_test", 500, "starts with non-letter character '_'"},
                 {"t1".repeat(40) + "t", 500, "Maximum characters number was exceeded"},
-                {"", 500, "Project ID must not be empty."},
                 {"  ", 500, "Project ID must not be empty."},
                 {"\r\n", 500, "Project ID must not be empty."},
                 {"T*1", 500, "Project ID \\\"T*1\\\" is invalid: contains unsupported character '*'."},

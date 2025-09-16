@@ -1,13 +1,9 @@
 package com.example.teamcity.api.spec;
 
 import com.example.teamcity.api.config.Config;
-import com.example.teamcity.api.enums.Scope;
-import com.example.teamcity.api.models.Role;
 import com.example.teamcity.api.models.User;
-import io.restassured.RestAssured;
 import io.restassured.authentication.BasicAuthScheme;
 import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
@@ -17,7 +13,7 @@ import java.util.List;
 
 import static io.restassured.filter.log.LogDetail.ALL;
 
-public class Specifications {
+public class RequestSpecifications {
     private static RequestSpecBuilder reqBuilder() {
         RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
         reqBuilder.setBaseUri("http://" + Config.getProperty("host")).build();

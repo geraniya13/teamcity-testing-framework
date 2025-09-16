@@ -2,7 +2,7 @@ package com.example.teamcity.api;
 
 import com.example.teamcity.api.models.Build;
 import com.example.teamcity.api.requests.checked.CheckedBase;
-import com.example.teamcity.api.spec.Specifications;
+import com.example.teamcity.api.spec.RequestSpecifications;
 import com.example.teamcity.common.WireMock;
 import io.qameta.allure.Feature;
 import org.apache.http.HttpStatus;
@@ -25,7 +25,7 @@ public class StartBuildTest extends BaseApiTest {
 
     @Test(description = "User should be able to start build (with WireMock)", groups = {"Regression"})
     public void userStartsBuildWithWireMockTest() {
-        var checkedBuildQueueRequest = new CheckedBase<Build>(Specifications
+        var checkedBuildQueueRequest = new CheckedBase<Build>(RequestSpecifications
                 .mockSpec(), BUILD_QUEUE);
 
         var build = checkedBuildQueueRequest.create(testData.getBuild());

@@ -6,7 +6,8 @@ import com.example.teamcity.api.models.*;
 import com.example.teamcity.api.requests.checked.CheckedRequests;
 import com.example.teamcity.api.requests.unchecked.UncheckedBase;
 import com.example.teamcity.api.requests.unchecked.UncheckedRequests;
-import com.example.teamcity.api.spec.Specifications;
+import com.example.teamcity.api.spec.RequestSpecifications;
+import com.example.teamcity.api.spec.ResponseSpecifications;
 import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
@@ -27,15 +28,15 @@ public class BuildTypeTest extends BaseApiTest {
     public void userCreatesBuildTypeTest() {
         superUserCheckRequests.getRequest(USERS).create(testData.getUser());
 
-        var userCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var userCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         userCheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getProject());
 
-        userCheckRequests.getRequest(BUILD_TYPES).create(testData.getBuildType());
+        var buildType = userCheckRequests.<BuildType>getRequest(BUILD_TYPES).create(testData.getBuildType());
 
         var createdBuildType = userCheckRequests.<BuildType>getRequest(BUILD_TYPES).read(testData.getBuildType().getId());
 
-        softy.assertEquals(testData.getBuildType().getName(), createdBuildType.getName(), "Build type name is not correct");
+        softy.assertEquals(buildType, createdBuildType, "Build types don't match");
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
@@ -45,16 +46,14 @@ public class BuildTypeTest extends BaseApiTest {
 
         superUserCheckRequests.getRequest(USERS).create(testData.getUser());
 
-        var userCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var userCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         userCheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getProject());
 
         userCheckRequests.getRequest(BUILD_TYPES).create(testData.getBuildType());
-        new UncheckedBase(Specifications.authSpec(testData.getUser()), BUILD_TYPES).create(buildTypeWithSameId)
+        new UncheckedBase(RequestSpecifications.authSpec(testData.getUser()), BUILD_TYPES).create(buildTypeWithSameId)
                 .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_BAD_REQUEST)
-                .body(Matchers.containsString("The build configuration / template ID \\\"%s\\\" is already used by another configuration or template".formatted(testData.getBuildType().getId())));
+                .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_BAD_REQUEST, "The build configuration / template ID \\\"%s\\\" is already used by another configuration or template", testData.getBuildType().getId()));
     }
 
     @WithUserRole(role = PROJECT_ADMIN)
@@ -71,10 +70,10 @@ public class BuildTypeTest extends BaseApiTest {
         });
 
         step("Create buildType for project by user (PROJECT_ADMIN) and check buildType was created successfully", () -> {
-            var projectAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
-            projectAdminCheckRequests.<BuildType>getRequest(BUILD_TYPES).create(testData.getBuildType());
+            var projectAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
+            var buildType = projectAdminCheckRequests.<BuildType>getRequest(BUILD_TYPES).create(testData.getBuildType());
             var createdBuildType = projectAdminCheckRequests.<BuildType>getRequest(BUILD_TYPES).read(testData.getBuildType().getId());
-            softy.assertEquals(testData.getBuildType().getName(), createdBuildType.getName());
+            softy.assertEquals(buildType, createdBuildType);
         });
 
     }
@@ -93,14 +92,12 @@ public class BuildTypeTest extends BaseApiTest {
             superUserCheckRequests.<Project>getRequest(PROJECTS).create(testData.getProject());
         });
 
-        var projectAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var projectAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create buildType for foreign project by user and check buildType was not created with forbidden code", () -> {
             projectAdminUncheckRequests.<BuildType>getRequest(BUILD_TYPES).create(testData.getBuildType())
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .body(Matchers.containsString("You do not have enough permissions to edit project with id: " + testData.getProject().getId()));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_FORBIDDEN, "You do not have enough permissions to edit project with id: %s", testData.getProject().getId()));
         });
     }
 }

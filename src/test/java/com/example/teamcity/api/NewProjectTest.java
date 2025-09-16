@@ -6,7 +6,8 @@ import com.example.teamcity.api.generators.TestDataStorage;
 import com.example.teamcity.api.models.*;
 import com.example.teamcity.api.requests.checked.CheckedRequests;
 import com.example.teamcity.api.requests.unchecked.UncheckedRequests;
-import com.example.teamcity.api.spec.Specifications;
+import com.example.teamcity.api.spec.RequestSpecifications;
+import com.example.teamcity.api.spec.ResponseSpecifications;
 import com.example.teamcity.dataprovider.ProjectDataProvider;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -33,7 +34,7 @@ public class NewProjectTest extends BaseApiTest {
 
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project", () -> systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription()));
 
@@ -45,15 +46,13 @@ public class NewProjectTest extends BaseApiTest {
     // content type case will always fail since TeamCity does not throw any exception regarding unexpected content type for text
     @Test(description = "User should not be able to create project without mandatory header", groups = {"Negative", "CRUD"}, dataProvider = "project_headers_negative", dataProviderClass = ProjectDataProvider.class)
     public void userCreatesProjectWithoutHeaderTest(String value, String header, int status, String error) {
-        var userCheckRequests = new UncheckedRequests(Specifications.defaultSpec().header(header, value));
+        var userCheckRequests = new UncheckedRequests(RequestSpecifications.defaultSpec().header(header, value));
 
-        step("Create project without " + header + " header and check status " + status + "and error message: " + error, () -> userCheckRequests
+        step("Create project without %s header and check status %s and error message: %s".formatted(header, status, error), () -> userCheckRequests
                 .<Project>getRequest(PROJECTS)
                 .create(testData.getNewProjectDescription()))
                 .then()
-                .assertThat()
-                .statusCode(status)
-                .body(Matchers.containsString(error));
+                .spec(ResponseSpecifications.generalValidationRespSpec(status, error));
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
@@ -62,13 +61,11 @@ public class NewProjectTest extends BaseApiTest {
         testData.getUser().setUsername(userName);
         testData.getUser().setPassword(userPassword);
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
-        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec((testData.getUser())).header("Authorization", encoded));
-        step("Create project with wrong value auth header heck 401 status error message", () -> {
+        var systemAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec((testData.getUser())).header("Authorization", encoded));
+        step("Create project with wrong value auth header check 401 status error message", () -> {
             systemAdminUncheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_UNAUTHORIZED)
-                    .body(Matchers.containsString("Incorrect username or password"));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_UNAUTHORIZED, "Incorrect username or password"));
         });
     }
 
@@ -77,14 +74,12 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithWrongInfoInContentHeaderTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec((testData.getUser())).contentType(ContentType.HTML));
+        var systemAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec((testData.getUser())).contentType(ContentType.HTML));
         step("Create project with wrong content type in content type header and check status 415 and error message", () ->
                 systemAdminUncheckRequests.<Project>getRequest(PROJECTS).create("<html></html>")
                         .then()
-                        .assertThat()
-                        .statusCode(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE)
-                        .body(Matchers.containsString("Unsupported Media Type")
-                        ));
+                        .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE, "Unsupported Media Type"))
+        );
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
@@ -93,13 +88,11 @@ public class NewProjectTest extends BaseApiTest {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
         step("Create project without body and check 500 error and error message", () -> RestAssured.given()
-                .spec(Specifications.authSpec(testData.getUser()))
+                .spec(RequestSpecifications.authSpec(testData.getUser()))
                 .when()
                 .post(PROJECTS.getUrl()))
                 .then()
-                .assertThat()
-                .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                .body(Matchers.containsString("Cannot read field \\\"name\\\" because \\\"descriptor\\\" is null"));
+                .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cannot read field \\\"name\\\" because \\\"descriptor\\\" is null"));
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
@@ -108,11 +101,9 @@ public class NewProjectTest extends BaseApiTest {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
         step("Create project with empty body and check 500 error and error message", () -> {
-            new UncheckedRequests(Specifications.authSpec((testData.getUser()))).<Project>getRequest(PROJECTS).create("")
+            new UncheckedRequests(RequestSpecifications.authSpec((testData.getUser()))).<Project>getRequest(PROJECTS).create("")
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                    .body(Matchers.containsString("Cannot read field \\\"name\\\" because \\\"descriptor\\\" is null"));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Cannot read field \\\"name\\\" because \\\"descriptor\\\" is null"));
         });
     }
 
@@ -122,15 +113,12 @@ public class NewProjectTest extends BaseApiTest {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
         step("Create project without name and check 500 error and error message", () -> {
-            given()
-                    .spec(Specifications.authSpec(testData.getUser()))
-                    .body("{\"id\": \"noName\",\"copyAllAssociatedSettings\": true}")
-                    .when()
-                    .post(PROJECTS.getUrl())
+            NewProjectDescription newProjectDescription = NewProjectDescription.builder().id("noName").build();
+            new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()))
+                    .<Project>getRequest(PROJECTS)
+                    .create(newProjectDescription)
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-                    .body(Matchers.containsString("Project name cannot be empty."));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_BAD_REQUEST, "Project name cannot be empty."));
         });
     }
 
@@ -140,15 +128,11 @@ public class NewProjectTest extends BaseApiTest {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
         step("Create project without mandatory id and check project created with id copied from name and adjusted", () -> {
-            Project project = given()
-                    .spec(Specifications.authSpec(testData.getUser()))
-                    .body("{\"name\": \"" + name + "\",\"copyAllAssociatedSettings\": true}")
-                    .when()
-                    .post(PROJECTS.getUrl())
+            NewProjectDescription newProjectDescription = NewProjectDescription.builder().name(name).build();
+            Project project = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()))
+                    .<Project>getRequest(PROJECTS).create(newProjectDescription)
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_OK)
-                    .body(Matchers.containsString("\"id\":\"" + id + "\""))
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_OK, "\"id\":\"%s\"", id))
                     .extract().as(Project.class);
 
             TestDataStorage.getStorage().addCreatedEntity(PROJECTS, project);
@@ -160,15 +144,13 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithNameMalformationsTest(String name, int status, String error) {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
-        step("Create project with " + name + " name and check status " + status + " and error message " + error, () -> {
+        step("Create project with %s name and check status %s and error message %s".formatted(name, status, error), () -> {
             testData.getNewProjectDescription().setName(name);
             systemAdminUncheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(status)
-                    .body(Matchers.containsString(error));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(status, error));
         });
     }
 
@@ -177,9 +159,9 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithValidNameTest(String name) {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminUncheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminUncheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
-        step("Create project with " + name, () -> {
+        step("Create project with %s name".formatted(name), () -> {
             testData.getNewProjectDescription().setName(name);
 
             systemAdminUncheckRequests.getRequest(PROJECTS).create(testData.getNewProjectDescription());
@@ -197,15 +179,13 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithInvalidIdTest(String id, int status, String error) {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
-        step("Create project with " + id + " id and check status " + status + " and error message " + error, () -> {
+        step("Create project with %s id and check status %s and error message %s".formatted(id, status, error), () -> {
             testData.getNewProjectDescription().setId(id);
             systemAdminUncheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(status)
-                    .body(Matchers.containsString(error));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(status, error));
         });
     }
 
@@ -214,17 +194,14 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithUnexistentParentTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project with unexistent project parent and check 404 status and error message", () -> {
             testData.getNewProjectDescription().setParentProject(testData.getProject());
 
             systemAdminUncheckRequests.<NewProjectDescription>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(404)
-                    .body(Matchers.containsString("Project cannot be found by external id '%s'".formatted(testData.getProject().getId())));
-            ;
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_NOT_FOUND, "Project cannot be found by external id '%s'", testData.getProject().getId()));
         });
     }
 
@@ -233,17 +210,15 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithExistentIdTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project", () -> systemAdminCheckRequests.getRequest(PROJECTS).create(testData.getNewProjectDescription()));
 
         step("Create project with existent id and check status 400 and error message", () -> {
             testData.getNewProjectDescription().setName("Updated Name");
-            new UncheckedRequests(Specifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
+            new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-                    .body(Matchers.containsString(String.format("Project ID \\\"%s\\\" is already used by another project.", testData.getNewProjectDescription().getId())));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_BAD_REQUEST, "Project ID \\\"%s\\\" is already used by another project.", testData.getNewProjectDescription().getId()));
         });
     }
 
@@ -252,17 +227,15 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithExistentNameTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project", () -> systemAdminCheckRequests.getRequest(PROJECTS).create(testData.getNewProjectDescription()));
 
         step("Create project with existent id and check status 400 and error message", () -> {
             testData.getNewProjectDescription().setId("updatedId");
-            new UncheckedRequests(Specifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
+            new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-                    .body(Matchers.containsString(String.format("Project with this name already exists: %s", testData.getNewProjectDescription().getName())));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_BAD_REQUEST, "Project with this name already exists: %s", testData.getNewProjectDescription().getName()));
         });
     }
 
@@ -276,7 +249,7 @@ public class NewProjectTest extends BaseApiTest {
 
         step("Create project admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var projectAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var projectAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         var childProject = generate(NewProjectDescription.class);
 
@@ -303,7 +276,7 @@ public class NewProjectTest extends BaseApiTest {
 
         step("Create project admin and foreign project", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var projectAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var projectAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         var foreignProject = superUserCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
 
@@ -312,9 +285,7 @@ public class NewProjectTest extends BaseApiTest {
             childProject.setParentProject(foreignProject);
             projectAdminUncheckRequests.<Project>getRequest(PROJECTS).create(childProject)
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .body(Matchers.containsString("You do not have \\\"Create subproject\\\" permission"));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_FORBIDDEN, "You do not have \\\"Create subproject\\\" permission"));
         });
     }
 
@@ -327,16 +298,14 @@ public class NewProjectTest extends BaseApiTest {
 
         superUserCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription());
 
-        step("Create user with role " + role.getRoleId(), () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+        step("Create user with role %s".formatted(role.getRoleId()), () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var projectAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var projectAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project with root as parent and check 403 status and error message", () -> {
             projectAdminUncheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class))
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .body(Matchers.containsString("You do not have \\\"Create subproject\\\" permission in project with internal id: _Root."));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_FORBIDDEN, "You do not have \\\"Create subproject\\\" permission in project with internal id: _Root."));
         });
     }
 
@@ -349,18 +318,16 @@ public class NewProjectTest extends BaseApiTest {
 
         Project parentProject = superUserCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription());
 
-        step("Create user with role " + role.getRoleId(), () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+        step("Create user with role %s".formatted(role.getRoleId()), () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var projectAdminUncheckRequests = new UncheckedRequests(Specifications.authSpec(testData.getUser()));
+        var projectAdminUncheckRequests = new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         step("Create project with granted project as parent and check 403 status and error message", () -> {
             NewProjectDescription childProject = generate(NewProjectDescription.class);
             childProject.setParentProject(parentProject);
             projectAdminUncheckRequests.<Project>getRequest(PROJECTS).create(childProject)
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_FORBIDDEN)
-                    .body(Matchers.containsString("You do not have \\\"Create subproject\\\" permission"));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_FORBIDDEN, "You do not have \\\"Create subproject\\\" permission"));
         });
     }
 
@@ -369,7 +336,7 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithDifferentParentAndSourceTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         Project project1 = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
 
@@ -381,7 +348,7 @@ public class NewProjectTest extends BaseApiTest {
                 .build();
 
         project2.setParameters(Properties.builder().property(Arrays.asList(property)).build());
-        systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(property, "/" + project2.getId() + "/parameters");
+        systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(property, "/%s/parameters".formatted(project2.getId()));
 
         step("Create project with different parent and source projects", () -> {
             testData.getNewProjectDescription().setParentProject(project1);
@@ -393,7 +360,7 @@ public class NewProjectTest extends BaseApiTest {
             Project createdProject = systemAdminCheckRequests.<Project>getRequest(PROJECTS).read(testData.getNewProjectDescription().getId());
 
             softy.assertEquals(createdProject.getParentProject().getId(), project1.getId());
-            softy.assertEquals(createdProject.getParameters().getProperty().get(0).getValue(), "testValue");
+            softy.assertEquals(createdProject.getParameters().getProperty().get(0), property);
         });
     }
 
@@ -402,7 +369,7 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithSameParentAndSourceTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         Project parentProject = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
 
@@ -423,7 +390,7 @@ public class NewProjectTest extends BaseApiTest {
     public void systemAdminCreatesProjectWithDifferentSourceLocatorAndSourceTest() {
         step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
         Project project1 = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(generate(NewProjectDescription.class));
 
@@ -431,27 +398,25 @@ public class NewProjectTest extends BaseApiTest {
 
         step("Create project with 1 as source project and 2 as source locator and check 400 error and error message", () -> {
             testData.getNewProjectDescription().setSourceProject(project1);
-            testData.getNewProjectDescription().setSourceProjectLocator("id:" + project2.getId());
-            new UncheckedRequests(Specifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
+            testData.getNewProjectDescription().setSourceProjectLocator("id:%s".formatted(project2.getId()));
+            new UncheckedRequests(RequestSpecifications.authSpec(testData.getUser())).<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription())
                     .then()
-                    .assertThat()
-                    .statusCode(HttpStatus.SC_BAD_REQUEST)
-                    .body(Matchers.containsString("Both 'sourceProject' and 'sourceProjectLocator' are specified."));
+                    .spec(ResponseSpecifications.generalValidationRespSpec(HttpStatus.SC_BAD_REQUEST, "Both 'sourceProject' and 'sourceProjectLocator' are specified."));
         });
     }
 
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
     @Test(description = "System Admin should be able to find existing project by name", groups = {"Positive", "CRUD"})
     public void systemAdminSearchesProjectByNameTest() {
-        step("Create system admin", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
+        step("Create system admin and project", () -> superUserCheckRequests.getRequest(USERS).create(testData.getUser()));
 
-        var systemAdminCheckRequests = new CheckedRequests(Specifications.authSpec(testData.getUser()));
+        var systemAdminCheckRequests = new CheckedRequests(RequestSpecifications.authSpec(testData.getUser()));
 
-        step("Create project", () -> systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription()));
+        Project createdProject = systemAdminCheckRequests.<Project>getRequest(PROJECTS).create(testData.getNewProjectDescription());
 
         step("Search for created project by name and check project was successfully found", () -> {
             Project result = systemAdminCheckRequests.<Project>getRequest(PROJECTS).searchSingle(new String[]{"name", testData.getNewProjectDescription().getName()});
-            softy.assertEquals(result.getId(), testData.getNewProjectDescription().getId());
+            softy.assertEquals(result, createdProject);
         });
 
 

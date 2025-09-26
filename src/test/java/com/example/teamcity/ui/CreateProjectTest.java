@@ -22,11 +22,7 @@ public class CreateProjectTest extends BaseUiTest {
         loginAs(testData.getUser());
 
         // взаимодействие с юай
-        step("Open `Create Project Page` (http://localhost:8111/admin/createObjectMenu.html)");
-        step("Send all project parameters (repository URL)");
-        step("Click `Proceed`");
-        step("Fix Project Name and Build Type Name values");
-        step("Click `Proceed`");
+        step("Open `Create Project Page` (http://localhost:8111/admin/createObjectMenu.html) -> Send all project parameters (repository URL) -> Click `Proceed` -> Fix Project Name and Build Type Name values -> Click `Proceed`");
 
         CreateProjectPage.openCreateProjectPage("_Root")
                 .createForm(REPO_URL)

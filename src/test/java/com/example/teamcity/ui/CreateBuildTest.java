@@ -20,15 +20,12 @@ public class CreateBuildTest extends BaseUiTest {
     @Test(description = "User should be able to create build configuration", groups = {"Positive"})
     @WithUserRole(role = SYSTEM_ADMIN, scope = GLOBAL)
     public void userCreatesBuildConfiguration(){
+        step("Log in to team city and create project via api");
         loginAs(testData.getUser());
         var createdProject = createProject(testData.getUser(), testData.getNewProjectDescription());
 
         // взаимодействие с юай
-        step("Open `Create Build Configuration` (http://localhost:8111/admin/createObjectMenu.html)");
-        step("Send build repository URL");
-        step("Click `Proceed`");
-        step("Fix Build Type Name value");
-        step("Click `Proceed`");
+        step("Open `Create Build Configuration` (http://localhost:8111/admin/createObjectMenu.html) -> Send build repository URL -> Click `Proceed` -> Fix Build Type Name value -> Click `Proceed`");
 
         CreateBuildConfigurationPage.openCreateBuildConfigurationPage(createdProject.getId())
                         .createForm(REPO_URL)
@@ -62,14 +59,9 @@ public class CreateBuildTest extends BaseUiTest {
         var initBuildConfigurationsCount = superUserCheckRequests.<Project>getRequest(PROJECTS).read(createdProject.getId()).getBuildTypes().getCount();
 
         // взаимодействие с юай
-        step("Open `Create Build Configuration` (http://localhost:8111/admin/createObjectMenu.html)");
-        step("Send build repository URL");
-        step("Click `Proceed`");
-        step("Set Build Type Name value to null");
-        step("Click `Proceed`");
         // проверка состояния ЮАЙ
         // корректность считывания данных от АПИ и отображение данных на ЮАЙ
-        step("Check that error appears `Build configuration name must not be empty`");
+        step("Open `Create Build Configuration` (http://localhost:8111/admin/createObjectMenu.html) -> Send build repository URL -> Click `Proceed` -> Set Build Type Name value to null -> Click `Proceed` -> Check that error appears `Build configuration name must not be empty`");
 
         CreateBuildConfigurationPage.openCreateBuildConfigurationPage(createdProject.getId())
                 .createForm(REPO_URL)

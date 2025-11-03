@@ -1,22 +1,21 @@
 package com.example.teamcity.api.models;
 
-import com.example.teamcity.api.annotations.Random;
+import com.example.teamcity.ui.pages.BasePage;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder(toBuilder = true)
+import java.util.List;
+
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User extends BaseModel {
-    private String id;
-    @Random
-    private String username;
-    @Random
-    private String password;
-    private Roles roles;
+public class BuildTypes extends BaseModel {
+    private int count;
+    private List<BuildType> buildType;
 }

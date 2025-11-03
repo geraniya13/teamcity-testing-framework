@@ -1,5 +1,5 @@
 ### Constants
-@host = 192.168.0.44
+@host = 192.168.0.149
 @port = 8111
 @user = admin
 @password = admin
@@ -10,6 +10,11 @@
 
 ### GET all projects
 GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects
+Content-Type: application/json
+Accept: application/json
+
+### GET project
+GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects/id:{{projectId}}
 Content-Type: application/json
 Accept: application/json
 
@@ -77,3 +82,14 @@ Accept: application/json
     "id": "{{buildTypeId}}"
   }
 }
+
+### Step 4: get project build configurations
+# @no-cookie-jar
+GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects/id:{{projectId}}/order/buildTypes
+Content-Type: application/json
+Accept: application/json
+
+### GET buildType
+GET http://{{user}}:{{password}}@{{host}}:{{port}}//app/rest/buildTypes/project475_TestBuild
+Content-Type: application/json
+Accept: application/json

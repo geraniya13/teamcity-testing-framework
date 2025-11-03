@@ -7,16 +7,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder(toBuilder = true)
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User extends BaseModel {
+public class Build extends BaseModel {
+    @Random
     private String id;
-    @Random
-    private String username;
-    @Random
-    private String password;
-    private Roles roles;
+    private String status;
+    private String state;
+    private BuildType buildType;
 }

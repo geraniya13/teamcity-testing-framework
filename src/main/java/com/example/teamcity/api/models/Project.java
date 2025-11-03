@@ -2,6 +2,7 @@ package com.example.teamcity.api.models;
 
 import com.example.teamcity.api.annotations.Optional;
 import com.example.teamcity.api.annotations.Random;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,9 @@ public class Project extends BaseModel {
     @Random
     private String name;
     private String parentProjectId;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @Optional
+    private BuildTypes buildTypes;
     private String parentProjectInternalId;
     private String parentProjectName;
     private boolean archived;

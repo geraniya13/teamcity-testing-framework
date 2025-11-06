@@ -1,0 +1,21 @@
+<div>POST to http://localhost:8081/app/rest/buildQueue</div>
+
+    <h4>Body</h4>
+    <div>
+    <pre class="preformated-text">
+{&quot;id&quot;:&quot;test_gDRSDXVoos&quot;,&quot;status&quot;:null,&quot;state&quot;:null,&quot;buildType&quot;:{&quot;id&quot;:&quot;test_upNcaExhFy&quot;,&quot;name&quot;:&quot;test_NVKPcpYCxu&quot;,&quot;project&quot;:{&quot;id&quot;:&quot;test_zROFLntcRw&quot;,&quot;name&quot;:&quot;test_DQjMoDyefo&quot;,&quot;archived&quot;:false,&quot;virtual&quot;:false,&quot;parameters&quot;:{&quot;count&quot;:0,&quot;href&quot;:null,&quot;property&quot;:[{&quot;name&quot;:null,&quot;value&quot;:null,&quot;inherited&quot;:false,&quot;type&quot;:{}}]}},&quot;steps&quot;:{&quot;count&quot;:null,&quot;step&quot;:[{&quot;id&quot;:null,&quot;name&quot;:null,&quot;type&quot;:&quot;simpleRunner&quot;}]}}}    </pre>
+    </div>
+
+    <h4>Headers</h4>
+    <div>
+            <div>Accept: */*</div>
+            <div>Content-Type: text/plain; charset=ISO-8859-1</div>
+    </div>
+
+
+
+    <h4>Curl</h4>
+    <div>
+        curl -v -X POST &#39;http://localhost:8081/app/rest/buildQueue&#39; -H &#39;Accept: */*&#39; -H &#39;Content-Type: text/plain; charset=ISO-8859-1&#39; -d &#39;{&quot;id&quot;:&quot;test_gDRSDXVoos&quot;,&quot;status&quot;:null,&quot;state&quot;:null,&quot;buildType&quot;:{&quot;id&quot;:&quot;test_upNcaExhFy&quot;,&quot;name&quot;:&quot;test_NVKPcpYCxu&quot;,&quot;project&quot;:{&quot;id&quot;:&quot;test_zROFLntcRw&quot;,&quot;name&quot;:&quot;test_DQjMoDyefo&quot;,&quot;archived&quot;:false,&quot;virtual&quot;:false,&quot;parameters&quot;:{&quot;count&quot;:0,&quot;href&quot;:null,&quot;property&quot;:[{&quot;name&quot;:null,&quot;value&quot;:null,&quot;inherited&quot;:false,&quot;type&quot;:{}}]}},&quot;steps&quot;:{&quot;count&quot;:null,&quot;step&quot;:[{&quot;id&quot;:null,&quot;name&quot;:null,&quot;type&quot;:&quot;simpleRunner&quot;}]}}}&#39;
+    </div>
+

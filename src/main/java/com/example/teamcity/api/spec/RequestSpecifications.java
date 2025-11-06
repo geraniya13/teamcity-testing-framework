@@ -2,6 +2,8 @@ package com.example.teamcity.api.spec;
 
 import com.example.teamcity.api.config.Config;
 import com.example.teamcity.api.models.User;
+import com.github.viclovsky.swagger.coverage.FileSystemOutputWriter;
+import com.github.viclovsky.swagger.coverage.SwaggerCoverageRestAssured;
 import io.restassured.authentication.BasicAuthScheme;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.RequestLoggingFilter;
@@ -9,8 +11,10 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 
+import java.nio.file.Paths;
 import java.util.List;
 
+import static com.github.viclovsky.swagger.coverage.SwaggerCoverageConstants.OUTPUT_DIRECTORY;
 import static io.restassured.filter.log.LogDetail.ALL;
 
 public class RequestSpecifications {
@@ -18,6 +22,11 @@ public class RequestSpecifications {
         RequestSpecBuilder reqBuilder = new RequestSpecBuilder();
         reqBuilder.setBaseUri("http://" + Config.getProperty("host")).build();
         reqBuilder.addFilters(List.of(new RequestLoggingFilter(), new ResponseLoggingFilter()));
+        reqBuilder.addFilter(new SwaggerCoverageRestAssured(
+                new FileSystemOutputWriter(
+                        Paths.get("target/" + OUTPUT_DIRECTORY)
+                )
+        ));
         reqBuilder.log(ALL);
         return reqBuilder;
     }

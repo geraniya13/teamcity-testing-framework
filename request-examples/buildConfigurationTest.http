@@ -8,6 +8,11 @@
 @projectId = project456
 @buildTypeId = build456
 
+### GET swagger.json
+GET http://{{host}}:{{port}}/app/rest/swagger.json
+Content-Type: application/json
+Accept: application/json
+
 ### GET all projects
 GET http://{{user}}:{{password}}@{{host}}:{{port}}/app/rest/projects
 Content-Type: application/json

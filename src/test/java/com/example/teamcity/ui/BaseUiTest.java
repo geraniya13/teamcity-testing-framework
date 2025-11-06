@@ -2,6 +2,7 @@ package com.example.teamcity.ui;
 
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.logevents.SelenideLogger;
 import com.example.teamcity.BaseTest;
 import com.example.teamcity.api.config.Config;
 import com.example.teamcity.api.enums.Endpoint;
@@ -11,6 +12,7 @@ import com.example.teamcity.api.models.User;
 import com.example.teamcity.api.requests.checked.CheckedRequests;
 import com.example.teamcity.api.spec.RequestSpecifications;
 import com.example.teamcity.ui.pages.LoginPage;
+import io.qameta.allure.selenide.AllureSelenide;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeSuite;
 
@@ -34,7 +36,10 @@ public class BaseUiTest extends BaseTest {
                     Map.of("enableVNC", true,
                             "enableLog", true));
         }
-
+        SelenideLogger.addListener("AllureSelenide", new AllureSelenide()
+                .screenshots(true)
+                .savePageSource(true)
+                .includeSelenideSteps(true));
 
         //не писать юай тесты с локальным браузером
         //после запуска на ремоут браузере потребуется перенастройка

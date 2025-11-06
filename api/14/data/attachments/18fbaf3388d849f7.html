@@ -1,0 +1,91 @@
+<div>POST to http://172.17.0.1:8111/app/rest/projects</div>
+
+    <h4>Body</h4>
+    <div>
+    <pre class="preformated-text">
+{
+    &quot;id&quot;: &quot;test_jIEZBJxpDO&quot;,
+    &quot;name&quot;: &quot;test_nnNpIZyulH&quot;,
+    &quot;copyAllAssociatedSettings&quot;: true,
+    &quot;parentProject&quot;: {
+        &quot;id&quot;: &quot;test_KjgHZEsyVE&quot;,
+        &quot;name&quot;: &quot;test_oclpzrQlMR&quot;,
+        &quot;parentProjectId&quot;: &quot;_Root&quot;,
+        &quot;buildTypes&quot;: {
+            &quot;count&quot;: 0,
+            &quot;buildType&quot;: [
+                
+            ]
+        },
+        &quot;archived&quot;: false,
+        &quot;virtual&quot;: false,
+        &quot;href&quot;: &quot;/app/rest/projects/id:test_KjgHZEsyVE&quot;,
+        &quot;webUrl&quot;: &quot;http://localhost:8111/project.html?projectId=test_KjgHZEsyVE&quot;,
+        &quot;parameters&quot;: {
+            &quot;count&quot;: 0,
+            &quot;href&quot;: &quot;/app/rest/projects/id:test_KjgHZEsyVE/parameters&quot;,
+            &quot;property&quot;: [
+                
+            ]
+        },
+        &quot;parentProject&quot;: {
+            &quot;id&quot;: &quot;_Root&quot;,
+            &quot;name&quot;: &quot;&lt;Root project&gt;&quot;,
+            &quot;archived&quot;: false,
+            &quot;virtual&quot;: false,
+            &quot;description&quot;: &quot;Contains all other projects&quot;,
+            &quot;href&quot;: &quot;/app/rest/projects/id:_Root&quot;,
+            &quot;webUrl&quot;: &quot;http://localhost:8111/project.html?projectId=_Root&quot;
+        }
+    }
+}    </pre>
+    </div>
+
+    <h4>Headers</h4>
+    <div>
+            <div>Accept: application/json, application/javascript, text/javascript, text/json</div>
+            <div>Content-Type: application/json</div>
+    </div>
+
+
+
+    <h4>Curl</h4>
+    <div>
+        curl -v -X POST &#39;http://172.17.0.1:8111/app/rest/projects&#39; -H &#39;Accept: application/json, application/javascript, text/javascript, text/json&#39; -H &#39;Content-Type: application/json&#39; -d &#39;{
+    &quot;id&quot;: &quot;test_jIEZBJxpDO&quot;,
+    &quot;name&quot;: &quot;test_nnNpIZyulH&quot;,
+    &quot;copyAllAssociatedSettings&quot;: true,
+    &quot;parentProject&quot;: {
+        &quot;id&quot;: &quot;test_KjgHZEsyVE&quot;,
+        &quot;name&quot;: &quot;test_oclpzrQlMR&quot;,
+        &quot;parentProjectId&quot;: &quot;_Root&quot;,
+        &quot;buildTypes&quot;: {
+            &quot;count&quot;: 0,
+            &quot;buildType&quot;: [
+                
+            ]
+        },
+        &quot;archived&quot;: false,
+        &quot;virtual&quot;: false,
+        &quot;href&quot;: &quot;/app/rest/projects/id:test_KjgHZEsyVE&quot;,
+        &quot;webUrl&quot;: &quot;http://localhost:8111/project.html?projectId=test_KjgHZEsyVE&quot;,
+        &quot;parameters&quot;: {
+            &quot;count&quot;: 0,
+            &quot;href&quot;: &quot;/app/rest/projects/id:test_KjgHZEsyVE/parameters&quot;,
+            &quot;property&quot;: [
+                
+            ]
+        },
+        &quot;parentProject&quot;: {
+            &quot;id&quot;: &quot;_Root&quot;,
+            &quot;name&quot;: &quot;&lt;Root project&gt;&quot;,
+            &quot;archived&quot;: false,
+            &quot;virtual&quot;: false,
+            &quot;description&quot;: &quot;Contains all other projects&quot;,
+            &quot;href&quot;: &quot;/app/rest/projects/id:_Root&quot;,
+            &quot;webUrl&quot;: &quot;http://localhost:8111/project.html?projectId=_Root&quot;
+        }
+    }
+}&#39;
+    </div>
+
